@@ -1,8 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-# Claude Code Devcontainer CLI Helper
-# Provides the `devc` command for managing devcontainers
+# Agentic Devcontainer CLI Helper
+# Provides the `devx` command for managing devcontainers
 
 # Resolve symlinks to get actual script location
 SOURCE="${BASH_SOURCE[0]}"
@@ -23,7 +23,7 @@ NC='\033[0m' # No Color
 
 print_usage() {
   cat <<EOF
-Usage: devc <command> [options]
+Usage: devx <command> [options]
 
 Commands:
     .                   Install devcontainer template to current directory and start
@@ -31,11 +31,11 @@ Commands:
     rebuild             Rebuild the devcontainer (preserves auth volumes)
     down                Stop the devcontainer
     shell               Open a shell in the running container
-    self-install        Install 'devc' command to ~/.local/bin
-    update              Update devc to the latest version
+    self-install        Install 'devx' command to ~/.local/bin
+    update              Update devx to the latest version
     template [dir]      Copy devcontainer template to directory (default: current)
     exec <cmd>          Execute a command in the running container
-    upgrade             Upgrade Claude Code to latest version
+    upgrade             Upgrade all agents to latest version
     mount <host> <cont> Add a mount to the devcontainer (recreates container)
     sync [project] [--trusted]  Sync sessions from devcontainers to host
     cp <cont> <host>    Copy files/directories from container to host
@@ -43,37 +43,37 @@ Commands:
     help                Show this help message
 
 Examples:
-    devc .                      # Install template and start container
-    devc up                     # Start container in current directory
-    devc rebuild                # Clean rebuild
-    devc shell                  # Open interactive shell
-    devc self-install           # Install devc to PATH
-    devc update                 # Update to latest version
-    devc exec ls -la            # Run command in container
-    devc upgrade                # Upgrade Claude Code to latest
-    devc mount ~/data /data     # Add mount to container
-    devc sync                   # Sync sessions from all devcontainers
-    devc sync crypto            # Sync only matching devcontainer
-    devc cp /some/file ./out    # Copy a path from container to host
-    devc destroy                # Remove all project Docker resources
-    devc destroy -f             # Skip confirmation prompt
+    devx .                      # Install template and start container
+    devx up                     # Start container in current directory
+    devx rebuild                # Clean rebuild
+    devx shell                  # Open interactive shell
+    devx self-install           # Install devx to PATH
+    devx update                 # Update to latest version
+    devx exec ls -la            # Run command in container
+    devx upgrade                # Upgrade all agents to latest
+    devx mount ~/data /data     # Add mount to container
+    devx sync                   # Sync sessions from all devcontainers
+    devx sync crypto            # Sync only matching devcontainer
+    devx cp /some/file ./out    # Copy a path from container to host
+    devx destroy                # Remove all project Docker resources
+    devx destroy -f             # Skip confirmation prompt
 EOF
 }
 
 log_info() {
-  echo -e "${BLUE}[devc]${NC} $1"
+  echo -e "${BLUE}[devx]${NC} $1"
 }
 
 log_success() {
-  echo -e "${GREEN}[devc]${NC} $1"
+  echo -e "${GREEN}[devx]${NC} $1"
 }
 
 log_warn() {
-  echo -e "${YELLOW}[devc]${NC} $1"
+  echo -e "${YELLOW}[devx]${NC} $1"
 }
 
 log_error() {
-  echo -e "${RED}[devc]${NC} $1" >&2
+  echo -e "${RED}[devx]${NC} $1" >&2
 }
 
 check_devcontainer_cli() {
@@ -291,11 +291,13 @@ cmd_upgrade() {
   workspace_folder="$(get_workspace_folder)"
 
   check_devcontainer_cli
-  log_info "Upgrading Claude Code..."
+  log_info "Upgrading all agents..."
 
   devcontainer exec --workspace-folder "$workspace_folder" claude update
+  devcontainer exec --workspace-folder "$workspace_folder" npm install -g @openai/codex@latest
+  devcontainer exec --workspace-folder "$workspace_folder" npm install -g @earendil-works/pi-coding-agent@latest
 
-  log_success "Claude Code upgraded"
+  log_success "All agents upgraded"
 }
 
 cmd_mount() {
@@ -304,7 +306,7 @@ cmd_mount() {
   local readonly="false"
 
   if [[ -z "$host_path" ]] || [[ -z "$container_path" ]]; then
-    log_error "Usage: devc mount <host_path> <container_path> [--readonly]"
+    log_error "Usage: devx mount <host_path> <container_path> [--readonly]"
     exit 1
   fi
 
@@ -321,7 +323,7 @@ cmd_mount() {
   local devcontainer_json="$workspace_folder/.devcontainer/devcontainer.json"
 
   if [[ ! -f "$devcontainer_json" ]]; then
-    log_error "No devcontainer.json found. Run 'devc template' first."
+    log_error "No devcontainer.json found. Run 'devx template' first."
     exit 1
   fi
 
@@ -569,7 +571,7 @@ cmd_cp() {
   local host_path="${2:-}"
 
   if [[ -z "$container_path" ]] || [[ -z "$host_path" ]]; then
-    log_error "Usage: devc cp <container_path> <host_path>"
+    log_error "Usage: devx cp <container_path> <host_path>"
     exit 1
   fi
 
@@ -593,14 +595,14 @@ cmd_cp() {
 
 cmd_self_install() {
   local install_dir="$HOME/.local/bin"
-  local install_path="$install_dir/devc"
+  local install_path="$install_dir/devx"
 
   mkdir -p "$install_dir"
 
   # Create a symlink to the original script
   ln -sf "$SCRIPT_DIR/$SCRIPT_NAME" "$install_path"
 
-  log_success "Installed 'devc' to $install_path"
+  log_success "Installed 'devx' to $install_path"
 
   # Check if in PATH
   if [[ ":$PATH:" != *":$install_dir:"* ]]; then
@@ -611,11 +613,11 @@ cmd_self_install() {
 }
 
 cmd_update() {
-  log_info "Updating devc..."
+  log_info "Updating devx..."
 
   if ! git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree &>/dev/null; then
     log_error "Not a git repository: $SCRIPT_DIR"
-    log_info "Re-clone with: rm -rf ~/.claude-devcontainer && git clone https://github.com/trailofbits/claude-code-devcontainer ~/.claude-devcontainer"
+    log_info "Re-clone with: rm -rf ~/.agentic-devcontainer && git clone https://github.com/trailofbits/agentic-devcontainer ~/.agentic-devcontainer"
     exit 1
   fi
 
