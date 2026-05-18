@@ -1,8 +1,6 @@
 import sys
 from pathlib import Path
 
-import pytest
-
 
 def test_setup_writes_config_toml(tmp_path, monkeypatch):
     """setup() creates ~/.codex/config.toml with approval_mode = full-auto."""
