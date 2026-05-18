@@ -2,7 +2,7 @@ import sys
 from pathlib import Path
 
 
-def test_setup_runs_without_error(capsys):
+def test_setup_runs_without_error():
     """setup() completes without raising."""
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from agents import pi
