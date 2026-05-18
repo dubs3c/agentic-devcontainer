@@ -13,10 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-# agents/ lives alongside this script in /opt/
-sys.path.insert(0, str(Path(__file__).parent))
-from agents import claude, codex, pi
-
 
 def setup_tmux_config():
     """Configure tmux with 200k history, mouse support, and vi keys."""
@@ -195,6 +191,10 @@ def main():
     fix_directory_ownership()
     setup_tmux_config()
     setup_global_gitignore()
+
+    # agents/ lives alongside this script in /opt/
+    sys.path.insert(0, str(Path(__file__).parent))
+    from agents import claude, codex, pi
 
     claude.setup()
     codex.setup()
