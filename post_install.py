@@ -1,121 +1,21 @@
 #!/usr/bin/env python3
-"""Post-install configuration for Claude Code devcontainer.
+"""Post-install configuration for the Agentic Devcontainer.
 
 Runs on container creation to set up:
-- Onboarding bypass (when CLAUDE_CODE_OAUTH_TOKEN is set)
-- Claude settings (bypassPermissions mode)
+- Each coding agent (Claude Code, Codex, Pi)
 - Tmux configuration (200k history, mouse support)
 - Directory ownership fixes for mounted volumes
+- Global gitignore
 """
 
-import contextlib
-import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
-
-def setup_onboarding_bypass():
-    """Bypass the interactive onboarding wizard when CLAUDE_CODE_OAUTH_TOKEN is set.
-
-    Runs `claude -p` to seed ~/.claude.json with auth state. The subprocess
-    writes the config file during startup before the API call completes, so
-    a timeout is expected and acceptable. After the subprocess finishes (or
-    times out), we check whether ~/.claude.json was populated and only then
-    set hasCompletedOnboarding.
-
-    Workaround for https://github.com/anthropics/claude-code/issues/8938.
-    """
-    token = os.environ.get("CLAUDE_CODE_OAUTH_TOKEN", "").strip()
-    if not token:
-        print(
-            "[post_install] No CLAUDE_CODE_OAUTH_TOKEN set, skipping onboarding bypass",
-            file=sys.stderr,
-        )
-        return
-
-    # When `CLAUDE_CONFIG_DIR` is set, as is done in `devcontainer.json`, `claude` unexpectedly 
-    # looks for `.claude.json` in *that* folder, instead of in `~`, contradicting the documentation.
-    #  See https://github.com/anthropics/claude-code/issues/3833#issuecomment-3694918874
-    claude_json_dir = Path(os.environ.get("CLAUDE_CONFIG_DIR", Path.home()))
-    claude_json = claude_json_dir / ".claude.json"
-
-    print("[post_install] Running claude -p to populate auth state...", file=sys.stderr)
-    try:
-        result = subprocess.run(
-            ["claude", "-p", "ok"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        if result.returncode != 0:
-            print(
-                f"[post_install] claude -p exited {result.returncode}: "
-                f"{result.stderr.strip()}",
-                file=sys.stderr,
-            )
-    except subprocess.TimeoutExpired:
-        print(
-            "[post_install] claude -p timed out (expected on cold start)",
-            file=sys.stderr,
-        )
-    except (FileNotFoundError, OSError) as e:
-        print(
-            f"[post_install] Warning: could not run claude ({e}) — "
-            "onboarding bypass skipped",
-            file=sys.stderr,
-        )
-        return
-
-    if not claude_json.exists():
-        print(
-            f"[post_install] Warning: {claude_json} not created by claude -p — "
-            "onboarding bypass skipped",
-            file=sys.stderr,
-        )
-        return
-
-    config: dict = {}
-    try:
-        config = json.loads(claude_json.read_text())
-    except json.JSONDecodeError as e:
-        print(
-            f"[post_install] Warning: {claude_json} has invalid JSON ({e}), "
-            "starting fresh",
-            file=sys.stderr,
-        )
-
-    config["hasCompletedOnboarding"] = True
-
-    claude_json.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
-    print(
-        f"[post_install] Onboarding bypass configured: {claude_json}", file=sys.stderr
-    )
-
-
-def setup_claude_settings():
-    """Configure Claude Code with bypassPermissions enabled."""
-    claude_dir = Path(os.environ.get("CLAUDE_CONFIG_DIR", Path.home() / ".claude"))
-    claude_dir.mkdir(parents=True, exist_ok=True)
-
-    settings_file = claude_dir / "settings.json"
-
-    # Load existing settings or start fresh
-    settings = {}
-    if settings_file.exists():
-        with contextlib.suppress(json.JSONDecodeError):
-            settings = json.loads(settings_file.read_text())
-
-    # Set bypassPermissions mode
-    if "permissions" not in settings:
-        settings["permissions"] = {}
-    settings["permissions"]["defaultMode"] = "bypassPermissions"
-
-    settings_file.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
-    print(
-        f"[post_install] Claude settings configured: {settings_file}", file=sys.stderr
-    )
+# agents/ lives alongside this script in /opt/
+sys.path.insert(0, str(Path(__file__).parent))
+from agents import claude, codex, pi
 
 
 def setup_tmux_config():
@@ -179,7 +79,6 @@ def fix_directory_ownership():
     for dir_path in dirs_to_fix:
         if dir_path.exists():
             try:
-                # Use sudo to fix ownership if needed
                 stat_info = dir_path.stat()
                 if stat_info.st_uid != uid:
                     subprocess.run(
@@ -212,7 +111,6 @@ def setup_global_gitignore():
     local_gitconfig = home / ".gitconfig.local"
     host_gitconfig = home / ".gitconfig"
 
-    # Create global gitignore with common patterns
     patterns = """\
 # Claude Code
 .claude/
@@ -255,8 +153,6 @@ node_modules/
     gitignore.write_text(patterns, encoding="utf-8")
     print(f"[post_install] Global gitignore created: {gitignore}", file=sys.stderr)
 
-    # Create local git config that includes host config and sets excludesfile + delta
-    # Delta config is included here so it works even if host doesn't have it configured
     local_config = f"""\
 # Container-local git config
 # Includes host config (mounted read-only) and adds container settings
@@ -296,11 +192,13 @@ def main():
     """Run all post-install configuration."""
     print("[post_install] Starting post-install configuration...", file=sys.stderr)
 
-    setup_onboarding_bypass()
-    setup_claude_settings()
-    setup_tmux_config()
     fix_directory_ownership()
+    setup_tmux_config()
     setup_global_gitignore()
+
+    claude.setup()
+    codex.setup()
+    pi.setup()
 
     print("[post_install] Configuration complete!", file=sys.stderr)
 
