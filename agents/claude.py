@@ -28,8 +28,9 @@ def setup_onboarding_bypass():
         )
         return
 
-    # When `CLAUDE_CONFIG_DIR` is set, claude looks for `.claude.json` in that
-    # folder instead of `~`. See https://github.com/anthropics/claude-code/issues/3833
+    # When `CLAUDE_CONFIG_DIR` is set, as is done in `devcontainer.json`, `claude` unexpectedly
+    # looks for `.claude.json` in *that* folder, instead of in `~`, contradicting the documentation.
+    #  See https://github.com/anthropics/claude-code/issues/3833#issuecomment-3694918874
     claude_json_dir = Path(os.environ.get("CLAUDE_CONFIG_DIR", Path.home()))
     claude_json = claude_json_dir / ".claude.json"
 
@@ -92,11 +93,13 @@ def setup_claude_settings():
 
     settings_file = claude_dir / "settings.json"
 
+    # Load existing settings or start fresh
     settings = {}
     if settings_file.exists():
         with contextlib.suppress(json.JSONDecodeError):
             settings = json.loads(settings_file.read_text())
 
+    # Set bypassPermissions mode
     if "permissions" not in settings:
         settings["permissions"] = {}
     settings["permissions"]["defaultMode"] = "bypassPermissions"
