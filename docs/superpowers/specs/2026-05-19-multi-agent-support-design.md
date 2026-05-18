@@ -70,6 +70,7 @@ No approval config needed (Pi is auto-approve by default). Logs presence of any 
 
 ### `install.sh`
 - Rename top comment to "Agentic Devcontainer CLI Helper"
+- Rename the CLI command from `devc` to `devx` throughout (usage text, log messages, self-install target path `~/.local/bin/devx`, symlink name)
 - `cmd_upgrade`: run all three upgrade commands in sequence:
   1. `claude update`
   2. `npm install -g @openai/codex@latest`
@@ -82,11 +83,12 @@ No approval config needed (Pi is auto-approve by default). Logs presence of any 
 - Add section documenting each agent, its auth env vars, and how to configure tokens
 - Update container details table to list all three agents
 - Rename repo clone path in quick-start examples to `~/.agentic-devcontainer`
+- Replace all `devc` command references with `devx`
 
 ## What Does Not Change
 
 - Container base image, system packages, volumes, mounts
-- `devc` command names and behaviour (except `upgrade`)
+- `devx` command names and behaviour (except `upgrade`)
 - `devc sync` (Claude Code session sync — remains Claude-specific)
 - `setup_tmux_config`, `fix_directory_ownership`, `setup_global_gitignore`
 - Security model (filesystem isolation, `bypassPermissions` concept extended to all agents)
