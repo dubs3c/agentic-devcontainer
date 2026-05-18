@@ -2,9 +2,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import patch
 
 
 def test_setup_claude_settings_creates_file(tmp_path, monkeypatch):
