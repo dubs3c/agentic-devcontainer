@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
-  "name": "Claude Code Sandbox",
+  "name": "Agentic Devcontainer",
   "build": {
     "dockerfile": "Dockerfile",
     "args": {
@@ -67,7 +67,9 @@
   },
   "remoteEnv": {
     "CLAUDE_CODE_OAUTH_TOKEN": "${localEnv:CLAUDE_CODE_OAUTH_TOKEN:}",
-    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY:}"
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY:}",
+    "OPENAI_API_KEY": "${localEnv:OPENAI_API_KEY:}",
+    "CODEX_ACCESS_TOKEN": "${localEnv:CODEX_ACCESS_TOKEN:}"
   },
   "initializeCommand": "test -f \"$HOME/.gitconfig\" || touch \"$HOME/.gitconfig\"",
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
