@@ -1,10 +1,12 @@
-# Claude Code in a devcontainer
+# Agentic Devcontainer
 
-A sandboxed development environment for running Claude Code with `bypassPermissions` safely enabled. Built at [Trail of Bits](https://www.trailofbits.com/) for security audit workflows.
+A sandboxed development environment for running AI coding agents with auto-approve safely enabled. Built at [Trail of Bits](https://www.trailofbits.com/) for security audit workflows.
+
+Supports Claude Code, Codex, and Pi — all pre-installed in a single container.
 
 ## Why Use This?
 
-Running Claude with `bypassPermissions` on your host machine is risky—it can execute any command without confirmation. This devcontainer provides **filesystem isolation** so you get the productivity benefits of unrestricted Claude without risking your host system.
+Running Claude with `bypassPermissions` on your host machine is risky—it can execute any command without confirmation. This devxontainer provides **filesystem isolation** so you get the productivity benefits of unrestricted Claude without risking your host system.
 
 **Designed for:**
 
@@ -12,6 +14,29 @@ Running Claude with `bypassPermissions` on your host machine is risky—it can e
 - **Untrusted repositories**: Explore unknown codebases safely
 - **Experimental work**: Let Claude modify code freely in isolation
 - **Multi-repo engagements**: Work on multiple related repositories
+
+## Agents
+
+All three agents are pre-installed in every container. Configure them by setting the relevant environment variables on your host before starting the container.
+
+| Agent | Command | Auth env vars |
+|-------|---------|---------------|
+| Claude Code | `claude` | `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` |
+| Codex | `codex` | `OPENAI_API_KEY` or `CODEX_ACCESS_TOKEN` |
+| Pi | `pi` | — (auto-approve by default) |
+
+### Token-Based Auth
+
+Set any combination of these on your host before running `devx`:
+
+```bash
+export CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...   # Claude Code
+export ANTHROPIC_API_KEY=sk-ant-...               # Claude Code (API key)
+export OPENAI_API_KEY=sk-...                      # Codex
+export CODEX_ACCESS_TOKEN=...                     # Codex (ChatGPT OAuth)
+```
+
+Tokens are forwarded into the container via `remoteEnv` in `devcontainer.json`. Values are never logged.
 
 ## Prerequisites
 
@@ -23,9 +48,9 @@ Running Claude with `bypassPermissions` on your host machine is risky—it can e
 - **For terminal workflows** (one-time install):
 
   ```bash
-  npm install -g @devcontainers/cli
-  git clone https://github.com/trailofbits/claude-code-devcontainer ~/.claude-devcontainer
-  ~/.claude-devcontainer/install.sh self-install
+  npm install -g @devxontainers/cli
+  git clone https://github.com/trailofbits/agentic-devxontainer ~/.agentic-devxontainer
+  ~/.agentic-devxontainer/install.sh self-install
   ```
 
 <details>
@@ -72,8 +97,8 @@ Each project gets its own container with independent volumes. Best for one-off r
 ```bash
 git clone <untrusted-repo>
 cd untrusted-repo
-devc .          # Installs template + starts container
-devc shell      # Opens shell in container
+devx .          # Installs template + starts container
+devx shell      # Opens shell in container
 ```
 
 **VS Code / Cursor:**
@@ -82,14 +107,14 @@ devc shell      # Opens shell in container
    - VS Code: `ms-vscode-remote.remote-containers`
    - Cursor: `anysphere.remote-containers`
 
-2. Set up the devcontainer (choose one):
+2. Set up the devxontainer (choose one):
 
    ```bash
-   # Option A: Use devc (recommended)
-   devc .
+   # Option A: Use devx (recommended)
+   devx .
 
    # Option B: Clone manually
-   git clone https://github.com/trailofbits/claude-code-devcontainer .devcontainer/
+   git clone https://github.com/trailofbits/claude-code-devxontainer .devxontainer/
    ```
 
 3. Open **your project folder** in VS Code, then:
@@ -98,14 +123,14 @@ devc shell      # Opens shell in container
 
 ### Pattern B: Shared Workspace Container (Grouped)
 
-A parent directory contains the devcontainer config, and you clone multiple repos inside. Shared volumes across all repos. Best for client engagements, related repositories, or ongoing work.
+A parent directory contains the devxontainer config, and you clone multiple repos inside. Shared volumes across all repos. Best for client engagements, related repositories, or ongoing work.
 
 ```bash
 # Create workspace for a client engagement
 mkdir -p ~/sandbox/client-name
 cd ~/sandbox/client-name
-devc .          # Install template + start container
-devc shell      # Opens shell in container
+devx .          # Install template + start container
+devx shell      # Opens shell in container
 
 # Inside container:
 git clone <client-repo-1>
@@ -116,12 +141,14 @@ claude          # Ready to work
 
 ## Token-Based Auth (Headless)
 
-For headless servers or to skip the interactive login wizard:
+See [Agents](#agents) above for the full list of supported env vars per agent.
+
+For Claude Code specifically, run the one-time setup on your host:
 
 ```bash
 claude setup-token                          # run on host, one-time
 export CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...
-devc rebuild                                # rebuilds with token
+devx rebuild                                # rebuilds with token
 ```
 
 The token is forwarded into the container. On each container creation, `post_install.py` runs a one-shot auth handshake so `claude` starts without the login wizard.
@@ -133,31 +160,31 @@ If you don't set a token, the interactive login flow works as before.
 ## CLI Helper Commands
 
 ```
-devc .              Install template + start container in current directory
-devc up             Start the devcontainer
-devc rebuild        Rebuild container (preserves persistent volumes)
-devc destroy [-f]   Remove container, volumes, and image for current project
-devc down           Stop the container
-devc shell          Open zsh shell in container
-devc exec CMD       Execute command inside the container
-devc upgrade        Upgrade Claude Code in the container
-devc mount SRC DST  Add a bind mount (host → container)
-devc sync [NAME]    Sync Claude Code sessions from devcontainers to host
-devc template DIR   Copy devcontainer files to directory
-devc self-install   Install devc to ~/.local/bin
+devx .              Install template + start container in current directory
+devx up             Start the devxontainer
+devx rebuild        Rebuild container (preserves persistent volumes)
+devx destroy [-f]   Remove container, volumes, and image for current project
+devx down           Stop the container
+devx shell          Open zsh shell in container
+devx exec CMD       Execute command inside the container
+devx upgrade        Upgrade Claude Code in the container
+devx mount SRC DST  Add a bind mount (host → container)
+devx sync [NAME]    Sync Claude Code sessions from devxontainers to host
+devx template DIR   Copy devxontainer files to directory
+devx self-install   Install devx to ~/.local/bin
 ```
 
-> **Note:** Use `devc destroy` to clean up a project's Docker resources. Removing containers manually (e.g., `docker rm`) will leave orphaned volumes and images behind that `devc destroy` won't be able to find.
+> **Note:** Use `devx destroy` to clean up a project's Docker resources. Removing containers manually (e.g., `docker rm`) will leave orphaned volumes and images behind that `devx destroy` won't be able to find.
 
 ## Session Sync for `/insights`
 
-Claude Code's `/insights` command analyzes your session history, but it only reads from `~/.claude/projects/` on the host. Sessions inside devcontainer volumes are invisible to it.
+Claude Code's `/insights` command analyzes your session history, but it only reads from `~/.claude/projects/` on the host. Sessions inside devxontainer volumes are invisible to it.
 
-`devc sync` copies session logs from all devcontainers (running and stopped) to the host so `/insights` can include them:
+`devx sync` copies session logs from all devxontainers (running and stopped) to the host so `/insights` can include them:
 
 ```bash
-devc sync              # Sync all devcontainers
-devc sync crypto       # Filter by project name (substring match)
+devx sync              # Sync all devxontainers
+devx sync crypto       # Filter by project name (substring match)
 ```
 
 Devcontainers are auto-discovered via Docker labels — no need to know container names or IDs. The sync is incremental, so it's safe to run repeatedly.
@@ -168,16 +195,16 @@ Devcontainers are auto-discovered via Docker labels — no need to know containe
 
 Drag files from your host into the VS Code Explorer panel — they are copied into `/workspace/` automatically. No configuration needed.
 
-### Terminal: `devc mount`
+### Terminal: `devx mount`
 
 To make a host directory available inside the container:
 
 ```bash
-devc mount ~/drop /drop           # Read-write
-devc mount ~/secrets /secrets --readonly
+devx mount ~/drop /drop           # Read-write
+devx mount ~/secrets /secrets --readonly
 ```
 
-This adds a bind mount to `devcontainer.json` and recreates the container. Existing mounts are preserved across `devc template` updates.
+This adds a bind mount to `devxontainer.json` and recreates the container. Existing mounts are preserved across `devx template` updates.
 
 **Tip:** A shared "drop folder" is useful for passing files in without mounting your entire home directory.
 
@@ -214,15 +241,15 @@ sudo iptables -A OUTPUT -j DROP
 
 ## Threat Model
 
-The primary threat this project addresses is **Claude Code running arbitrary commands on your host machine**. When `bypassPermissions` is enabled, Claude executes shell commands, installs packages, and modifies files without confirmation. On a host machine this means it can modify your shell config, `rm -rf` outside the project directory, or abuse locally stored credentials. The devcontainer confines all of that to a disposable container where the blast radius is limited to `/workspace`.
+The primary threat this project addresses is **Claude Code running arbitrary commands on your host machine**. When `bypassPermissions` is enabled, Claude executes shell commands, installs packages, and modifies files without confirmation. On a host machine this means it can modify your shell config, `rm -rf` outside the project directory, or abuse locally stored credentials. The devxontainer confines all of that to a disposable container where the blast radius is limited to `/workspace`.
 
-The container includes common development tooling so you can do all development work inside it - not just run Claude. The intended workflow is: clone a repository, start the devcontainer, and work entirely within it. If your project needs additional runtimes or tools beyond what's included, either add them to the Dockerfile for repeated use or install them ad-hoc with `devc exec`.
+The container includes common development tooling so you can do all development work inside it - not just run Claude. The intended workflow is: clone a repository, start the devxontainer, and work entirely within it. If your project needs additional runtimes or tools beyond what's included, either add them to the Dockerfile for repeated use or install them ad-hoc with `devx exec`.
 
-For the specific boundaries of what is and isn't isolated, see [Security Model](#security-model) below. One nuance worth calling out: the devcontainer runtime automatically forwards your host's SSH agent socket (`SSH_AUTH_SOCK`) into the container. This lets code inside the container authenticate as you over SSH (e.g., `git push`), but the actual private key material stays on the host and is never exposed to the container.
+For the specific boundaries of what is and isn't isolated, see [Security Model](#security-model) below. One nuance worth calling out: the devxontainer runtime automatically forwards your host's SSH agent socket (`SSH_AUTH_SOCK`) into the container. This lets code inside the container authenticate as you over SSH (e.g., `git push`), but the actual private key material stays on the host and is never exposed to the container.
 
 ## Security Model
 
-This devcontainer provides **filesystem isolation** but not complete sandboxing.
+This devxontainer provides **filesystem isolation** but not complete sandboxing.
 
 **Sandboxed:** Filesystem (host files inaccessible), processes (isolated from host), package installations (stay in container)
 
@@ -238,23 +265,24 @@ The container auto-configures `bypassPermissions` mode—Claude runs commands wi
 | User | `vscode` (passwordless sudo), working dir `/workspace` |
 | Tools | `rg`, `fd`, `tmux`, `fzf`, `delta`, `iptables`, `ipset` |
 | Volumes (survive rebuilds) | Command history (`/commandhistory`), Claude config (`~/.claude`), GitHub CLI auth (`~/.config/gh`) |
-| Host mounts | `~/.gitconfig` (read-only), `.devcontainer/` (read-only) |
+| Host mounts | `~/.gitconfig` (read-only), `.devxontainer/` (read-only) |
+| Agents | Claude Code (with skills), Codex, Pi |
 | Auto-configured | [anthropics](https://github.com/anthropics/claude-code-plugins) + [trailofbits](https://github.com/trailofbits/claude-code-plugins) skills, git-delta |
 
-Volumes are stored outside the container, so your shell history, Claude settings, and `gh` login persist even after `devc rebuild`. Host `~/.gitconfig` is mounted read-only for git identity.
+Volumes are stored outside the container, so your shell history, Claude settings, and `gh` login persist even after `devx rebuild`. Host `~/.gitconfig` is mounted read-only for git identity.
 
 ## Troubleshooting
 
-### "devcontainer CLI not found"
+### "devxontainer CLI not found"
 
 ```bash
-npm install -g @devcontainers/cli
+npm install -g @devxontainers/cli
 ```
 
 ### Container won't start
 
 1. Check Docker is running
-2. Try rebuilding: `devc rebuild`
+2. Try rebuilding: `devx rebuild`
 3. Check logs: `docker logs $(docker ps -lq)`
 
 ### GitHub CLI auth not persisting
@@ -280,12 +308,12 @@ uv run --with requests py.py  # Ad-hoc dependency
 Build the image manually:
 
 ```bash
-devcontainer build --workspace-folder .
+devxontainer build --workspace-folder .
 ```
 
 Test the container:
 
 ```bash
-devcontainer up --workspace-folder .
-devcontainer exec --workspace-folder . zsh
+devxontainer up --workspace-folder .
+devxontainer exec --workspace-folder . zsh
 ```
