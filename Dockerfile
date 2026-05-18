@@ -1,4 +1,4 @@
-# Claude Code Devcontainer
+# Agentic Devcontainer
 # Based on Microsoft devcontainer image for better devcontainer integration
 FROM ghcr.io/astral-sh/uv:0.10@sha256:10902f58a1606787602f303954cea099626a4adb02acbac4c69920fe9d278f82 AS uv
 FROM mcr.microsoft.com/devcontainers/base:ubuntu24.04@sha256:4bcb1b466771b1ba1ea110e2a27daea2f6093f9527fb75ee59703ec89b5561cb
@@ -95,6 +95,12 @@ RUN curl -fsSL https://fnm.vercel.app/install | bash -s -- --install-dir "$FNM_D
   fnm install ${NODE_VERSION} && \
   fnm default ${NODE_VERSION}
 
+# Install Codex and Pi coding agents
+RUN export PATH="/home/vscode/.fnm:$PATH" && eval "$(fnm env)" && \
+  npm install -g @openai/codex
+RUN export PATH="/home/vscode/.fnm:$PATH" && eval "$(fnm env)" && \
+  npm install -g @earendil-works/pi-coding-agent
+
 # Install Oh My Zsh
 # renovate: datasource=github-releases depName=deluan/zsh-in-docker
 ARG ZSH_IN_DOCKER_VERSION=1.2.1
@@ -110,3 +116,6 @@ RUN echo 'source ~/.zshrc.custom' >> /home/vscode/.zshrc
 
 # Copy post_install script
 COPY --chown=vscode:vscode post_install.py /opt/post_install.py
+
+# Copy agents package
+COPY --chown=vscode:vscode agents/ /opt/agents/
