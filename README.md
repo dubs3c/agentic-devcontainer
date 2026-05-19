@@ -114,7 +114,7 @@ devx shell      # Opens shell in container
    devx .
 
    # Option B: Clone manually
-   git clone https://github.com/trailofbits/claude-code-devcontainer .devcontainer/
+   git clone https://github.com/trailofbits/agentic-devcontainer .devcontainer/
    ```
 
 3. Open **your project folder** in VS Code, then:
@@ -167,7 +167,7 @@ devx destroy [-f]   Remove container, volumes, and image for current project
 devx down           Stop the container
 devx shell          Open zsh shell in container
 devx exec CMD       Execute command inside the container
-devx upgrade        Upgrade Claude Code in the container
+devx upgrade        Upgrade all agents in the container
 devx mount SRC DST  Add a bind mount (host → container)
 devx sync [NAME]    Sync Claude Code sessions from devcontainers to host
 devx template DIR   Copy devcontainer files to directory
