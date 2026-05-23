@@ -80,6 +80,7 @@ def setup_onboarding_bypass():
         )
 
     config["hasCompletedOnboarding"] = True
+
     claude_json.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
     print(
         f"[post_install] Onboarding bypass configured: {claude_json}", file=sys.stderr
