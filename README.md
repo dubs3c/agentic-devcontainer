@@ -4,6 +4,16 @@ A sandboxed development environment for running AI coding agents with auto-appro
 
 Supports Claude Code, Codex, and Pi — all pre-installed in a single container.
 
+## Fork Differences
+
+This is a fork of [trailofbits/agentic-devcontainer](https://github.com/trailofbits/agentic-devcontainer). The upstream project supports Claude Code only. This fork extends it with:
+
+- **Multi-agent support**: Codex (OpenAI) and Pi are pre-installed alongside Claude Code
+- **Auth env vars for all agents**: `OPENAI_API_KEY` and `CODEX_ACCESS_TOKEN` forwarded into the container
+- **CLI renamed**: `devc` → `devx`
+
+All security hardening and infrastructure improvements from upstream are regularly merged in.
+
 ## Why Use This?
 
 Running Claude with `bypassPermissions` on your host machine is risky—it can execute any command without confirmation. This devcontainer provides **filesystem isolation** so you get the productivity benefits of unrestricted Claude without risking your host system.
